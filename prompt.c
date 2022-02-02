@@ -74,7 +74,7 @@ char **read_commands(int *qtd_commands)
     i++;
   }
 
-  print_commands(commands_array, qtd_commands);
+  
 
   free(buffer_line);
 

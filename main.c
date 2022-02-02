@@ -28,11 +28,12 @@ int main(int argc, char const *argv[])
   struct sigaction act;
   sigset_t sigset;
 
-  sigemptyset(&act.sa_mask);
+/*   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
   sigaddset(&act.sa_mask, SIGTSTP);
-  sigaddset(&act.sa_mask, SIGINT); /* acrescentar SIGINT */
-  sigaddset(&act.sa_mask, SIGQUIT);
+  sigaddset(&act.sa_mask, SIGINT);  
+  sigaddset(&act.sa_mask, SIGQUIT); 
+   */
 
   if (sigprocmask(SIG_BLOCK, &act.sa_mask, NULL))
     perror("sigprocmask");
@@ -45,7 +46,16 @@ int main(int argc, char const *argv[])
   {
     print_prompt();
     commands_array = read_commands(&qtd_commands);
-    print_commands(commands_array, &qtd_commands);
+    
+
+    if(qtd_commands == 1){
+      printf("Apenas um processo Não Vacinado\n");
+      print_commands(commands_array, &qtd_commands);
+    }
+    else if(qtd_commands > 1){
+      printf("%d processos Vacinados\n",qtd_commands);
+      print_commands(commands_array, &qtd_commands);
+    }
 
   } while (TRUE);
 
