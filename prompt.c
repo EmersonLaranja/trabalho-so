@@ -151,7 +151,7 @@ int psh_launch(char *command, int qtd_commands)
   }
   else if (qtd_commands > 1)
   {
-    //! criando um grupo de processos vacinados
+    //! criando um grupo de processos vacinados e executar os processos
   }
 
   return 1;
