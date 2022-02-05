@@ -28,7 +28,7 @@ int main(int argc, char const *argv[])
   struct sigaction act;
   sigset_t sigset;
 
-  sigemptyset(&act.sa_mask);
+/*   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
   /*   sigaddset(&act.sa_mask, SIGTSTP);
     sigaddset(&act.sa_mask, SIGINT); /* acrescentar SIGINT */
