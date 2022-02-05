@@ -30,22 +30,28 @@ int main(int argc, char const *argv[])
 
   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
-  sigaddset(&act.sa_mask, SIGTSTP);
-  sigaddset(&act.sa_mask, SIGINT); /* acrescentar SIGINT */
-  sigaddset(&act.sa_mask, SIGQUIT);
+  /*   sigaddset(&act.sa_mask, SIGTSTP);
+    sigaddset(&act.sa_mask, SIGINT); /* acrescentar SIGINT */
+  // sigaddset(&act.sa_mask, SIGQUIT);
 
   if (sigprocmask(SIG_BLOCK, &act.sa_mask, NULL))
     perror("sigprocmask");
 
   // sigaction(SIGINT, &act, NULL);
-  print_gandalf();
+  // print_gandalf();
 
-  //! trcho que funciona do código
+  //! trecho que funciona do código
   do
   {
     print_prompt();
+
+    //{1} PS aux
+    //{2}  grep -i "gandalf"
+
     commands_array = read_commands(&qtd_commands);
-    print_commands(commands_array, &qtd_commands);
+
+    // print_commands(commands_array, &qtd_commands);
+    launch_all_commands(commands_array, qtd_commands);
 
   } while (TRUE);
 

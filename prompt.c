@@ -1,9 +1,8 @@
 #include "prompt.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 #define DELIMITER_TOKEN ";"
 #define MAX_COMMAND 5
+#define MAX_ARGUMENTS 20
 
 void print_prompt(void)
 {
@@ -74,11 +73,88 @@ char **read_commands(int *qtd_commands)
     i++;
   }
 
-  print_commands(commands_array, qtd_commands);
-
   free(buffer_line);
 
   return commands_array;
+}
+
+static char **split_command_to_exec(char *command, char **command_splited)
+{
+
+  int count = 0;
+  char *token;
+
+  // counter arguments of command
+  for (int i = 0; i < strlen(command); i++)
+  {
+
+    token = strtok(command, " ");
+    int flag = 0;
+    //! ajustar free e max_arguments numero
+    command_splited = (char **)malloc(sizeof(char *) * MAX_ARGUMENTS);
+    while (token != NULL)
+    {
+      command_splited[count] = strdup(token);
+      count++;
+      token = strtok(NULL, " ");
+    }
+
+    return command_splited;
+  }
+}
+void launch_all_commands(char **commands_array, int qtd_commands)
+{
+  for (int i = 0; i < qtd_commands; i++)
+  {
+    psh_launch(commands_array[i], qtd_commands);
+  }
+}
+
+int psh_launch(char *command, int qtd_commands)
+{
+  pid_t pid, wpid;
+  int status;
+  char **array_parameters;
+
+  if (qtd_commands == 1) // Não vacinados
+  {
+    pid = fork();
+    if (pid == 0) //! filho - cada um tem que ter o seu grupo
+    {
+      printf("Grupo do pai: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getpgid(getpid()));
+      printf("ID DO FILHO: %d\n", getpid());
+      setpgid(getpid(), getpid()); //! setando o grupo do filho com id do filho
+      printf("Grupo do pai: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getpgid(getpid()));
+      // Child process
+      array_parameters = split_command_to_exec(command, array_parameters);
+      if (execvp(array_parameters[0], array_parameters) == -1)
+      {
+        perror("psh");
+      }
+      exit(EXIT_FAILURE);
+    }
+
+    else if (pid < 0)
+    {
+      // Error forking
+      perror("psh");
+    }
+
+    else
+    {
+      // Parent process
+      do
+      {
+        wpid = waitpid(pid, &status, WUNTRACED);
+      } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+    }
+  }
+  else if (qtd_commands > 1)
+  {
+    //! criando um grupo de processos vacinados
+  }
+
+  return 1;
 }
 
 void print_gandalf(void)

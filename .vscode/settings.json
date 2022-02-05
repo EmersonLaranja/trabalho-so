@@ -1,9 +1,0 @@
-{
-  "files.associations": {
-    ".env": "dotenv",
-    "stdlib.h": "c",
-    "prompt.h": "c",
-    "stdio.h": "c",
-    "types.h": "c"
-  }
-}
