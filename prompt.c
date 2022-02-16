@@ -1,10 +1,10 @@
 #include "prompt.h"
-
 #define DELIMITER_TOKEN ";"
 #define MAX_COMMAND 5
 #define MAX_ARGUMENTS 20
 
 int teste = 0;
+
 
 void print_prompt(void)
 {
@@ -42,12 +42,6 @@ char **read_commands(int *qtd_commands)
   int line = getline(&buffer_line, &buffer_line_size, stdin);
   // verificando se o comando é valido
 
-  if (line == -1)
-  {
-
-    printf("\n");
-    return NULL;
-  }
 
   if (line == 1)
   {

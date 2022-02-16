@@ -11,9 +11,10 @@
 #define NAO_VACINADOS 4
 
 char msg[] = "Control - C pressed!\n";
-void SIG_VAC(int signo)
-{
-  printf("Desista - Estou Vacinado!");
+
+
+void SIG_VAC(int signo){
+  printf("Desista - Estou Vacinado!\n");
 }
 
 int main(int argc, char const *argv[])
@@ -24,19 +25,25 @@ int main(int argc, char const *argv[])
   system("clear");
   int pipe1[2];
 
-  struct sigaction act;
-  sigset_t sigset;
+  // struct sigaction act;
+  // sigset_t sigset;
 
-  act.sa_handler = SIG_VAC;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
+  // act.sa_handler = SIG_VAC;
+  // sigemptyset(&act.sa_mask);
+  // act.sa_flags = 0;
   // sigaddset(&act.sa_mask, SIGTSTP);
   // sigaddset(&act.sa_mask, SIGINT); /* acrescentar SIGINT */
   // sigaddset(&act.sa_mask, SIGQUIT);
 
-  sigaction(SIGINT, &act, NULL);
+  //sigaction(SIGINT, &act, NULL);
   // sigaction(SIGQUIT, &act, NULL);
   // sigaction(SIGTSTP, &act, NULL);
+
+ 
+  //signal(SIGINT, SIG_VAC);
+
+  signal(SIGINT, SIG_VAC);  
+
 
   if (pipe(pipe1) == -1)
   {
@@ -58,16 +65,13 @@ int main(int argc, char const *argv[])
   //! trecho que funciona do código
   do
   {
+     
     print_prompt();
 
     // scanf("%*[^\n]");
 
     commands_array = read_commands(&qtd_commands);
-    if (commands_array == NULL)
-    {
-      qtd_commands = 0;
-      continue;
-    }
+  
 
     // print_commands(commands_array, &qtd_commands);
     if (commands_array != NULL)
