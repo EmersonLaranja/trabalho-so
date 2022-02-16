@@ -264,7 +264,7 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2])
         printf("Grupo do pai: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getpgid(getpid()));
         printf("ID DO FILHO: %d\n", getpid());
         int seila = setpgid(getpid(), x); //! setando o grupo do filho com id do filho
-        printf("\t\tHORA DA VERDADE, VOCES ESTAO PRONTOS?: %d\n", seila);
+        printf("\t\t\t\tHORA DA VERDADE, VOCES ESTAO PRONTOS?: %d\n", seila);
         printf("Grupo do pai: %d,Grupo desse processo Filho ALterado: %d\n", getpgid(getppid()), getpgid(getpid()));
         // Child process
         array_parameters = split_command_to_exec(commands_array[i], array_parameters);

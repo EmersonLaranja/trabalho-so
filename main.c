@@ -28,11 +28,11 @@ int main(int argc, char const *argv[])
   struct sigaction act;
   sigset_t sigset;
 
-  /*   sigemptyset(&act.sa_mask);
-    act.sa_flags = 0;
-    /*   sigaddset(&act.sa_mask, SIGTSTP);
-      sigaddset(&act.sa_mask, SIGINT); /* acrescentar SIGINT */
-  // sigaddset(&act.sa_mask, SIGQUIT);
+  sigemptyset(&act.sa_mask);
+  act.sa_flags = 0;
+  sigaddset(&act.sa_mask, SIGTSTP);
+  sigaddset(&act.sa_mask, SIGINT); /* acrescentar SIGINT */
+  sigaddset(&act.sa_mask, SIGQUIT);
 
   if (pipe(pipe1) == -1)
   {
@@ -48,7 +48,7 @@ int main(int argc, char const *argv[])
   if (sigprocmask(SIG_BLOCK, &act.sa_mask, NULL))
     perror("sigprocmask");
 
-  // sigaction(SIGINT, &act, NULL);
+  sigaction(SIGINT, &act, NULL);
   // print_gandalf();
 
   //! trecho que funciona do código
