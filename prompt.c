@@ -190,7 +190,7 @@ static char **split_command_to_exec(char *command, char **command_splited)
 //   return 1;
 // }
 
-int psh_launch(char **commands_array, int qtd_commands, int *first_pid)
+int psh_launch(char **commands_array, int qtd_commands, int pipe1[2])
 {
   pid_t pid, wpid;
   int status;
@@ -239,17 +239,32 @@ int psh_launch(char **commands_array, int qtd_commands, int *first_pid)
 
       if (pid == 0)
       {
-
-        if (*first_pid == -1 && teste == 0)
+        int x = 0;
+        read(pipe1[0], &x, sizeof(x));
+        printf("Valor do pipe: %d\n", x);
+        if (x == -1)
         {
-          *first_pid = getpid();
-          printf("O id do primeiro ----%d\n", *first_pid);
-          teste = getpid();
+          int fist = getpid();
+          x = fist;
+          printf("O id do primeiro ----%d\n", fist);
+
+          write(pipe1[1], &fist, sizeof(fist));
+          close(pipe1[0]);
+          close(pipe1[1]);
         }
-        printf("----------------------\n");
+        else
+        {
+          write(pipe1[1], &x, sizeof(x));
+          printf("Valor de x: %d\n", x);
+          close(pipe1[0]);
+          close(pipe1[1]);
+        }
+
+        printf("\n----------------------\n");
         printf("Grupo do pai: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getpgid(getpid()));
         printf("ID DO FILHO: %d\n", getpid());
-        setpgid(getpid(), (*first_pid)); //! setando o grupo do filho com id do filho
+        int seila = setpgid(getpid(), x); //! setando o grupo do filho com id do filho
+        printf("\t\tHORA DA VERDADE, VOCES ESTAO PRONTOS?: %d\n", seila);
         printf("Grupo do pai: %d,Grupo desse processo Filho ALterado: %d\n", getpgid(getppid()), getpgid(getpid()));
         // Child process
         array_parameters = split_command_to_exec(commands_array[i], array_parameters);

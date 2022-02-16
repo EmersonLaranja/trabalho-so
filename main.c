@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include "prompt.h"
 #include <string.h>
-
 #define TRUE 1
 #define VACINADOS 2
 #define NAO_VACINADOS 4
@@ -23,7 +21,7 @@ int main(int argc, char const *argv[])
 {
   char **commands_array;
   int qtd_commands = 0;
-  int first_pid = -1;
+
   system("clear");
   int pipe1[2];
 
@@ -42,6 +40,11 @@ int main(int argc, char const *argv[])
     exit(1);
   }
 
+  int x = -1;
+  // close(pipe1[0]);
+  write(pipe1[1], &x, sizeof(x));
+  // close(pipe1[1]);
+
   if (sigprocmask(SIG_BLOCK, &act.sa_mask, NULL))
     perror("sigprocmask");
 
@@ -59,7 +62,7 @@ int main(int argc, char const *argv[])
     commands_array = read_commands(&qtd_commands);
 
     // print_commands(commands_array, &qtd_commands);
-    psh_launch(commands_array, qtd_commands, &first_pid);
+    psh_launch(commands_array, qtd_commands, pipe1);
 
   } while (TRUE);
 

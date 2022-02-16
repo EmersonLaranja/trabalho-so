@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    ".env": "dotenv",
+    "unistd.h": "c",
+    "types.h": "c"
+  }
+}
