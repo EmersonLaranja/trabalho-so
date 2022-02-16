@@ -4,6 +4,8 @@
 #define MAX_COMMAND 5
 #define MAX_ARGUMENTS 20
 
+int teste = 0;
+
 void print_prompt(void)
 {
   printf("psh> ");
@@ -73,6 +75,8 @@ char **read_commands(int *qtd_commands)
     i++;
   }
 
+  // coma
+
   free(buffer_line);
 
   return commands_array;
@@ -102,15 +106,91 @@ static char **split_command_to_exec(char *command, char **command_splited)
     return command_splited;
   }
 }
-void launch_all_commands(char **commands_array, int qtd_commands)
-{
-  for (int i = 0; i < qtd_commands; i++)
-  {
-    psh_launch(commands_array[i], qtd_commands);
-  }
-}
 
-int psh_launch(char *command, int qtd_commands)
+// void launch_all_commands(char **commands_array, int qtd_commands, int *first_pid)
+// {
+//   for (int i = 0; i < qtd_commands; i++)
+//   {
+//     printf("Comando %s\n", commands_array[i]);
+//     // psh_launch(commands_array[i], qtd_commands, first_pid);
+//   }
+// }
+
+// int psh_launch(char *command, int qtd_commands, int *first_pid)
+// {
+//   pid_t pid, wpid;
+//   int status;
+//   char **array_parameters;
+
+//   if (qtd_commands == 1) // Não vacinados
+//   {
+//     pid = fork();
+//     if (pid == 0) //! filho - cada um tem que ter o seu grupo
+//     {
+//       printf("Grupo do pai: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getpgid(getpid()));
+//       printf("ID DO FILHO: %d\n", getpid());
+//       setpgid(getpid(), getpid()); //! setando o grupo do filho com id do filho
+//       printf("Grupo do pai: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getpgid(getpid()));
+//       // Child process
+//       array_parameters = split_command_to_exec(command, array_parameters);
+//       if (execvp(array_parameters[0], array_parameters) == -1)
+//       {
+//         perror("psh");
+//       }
+//       exit(EXIT_FAILURE);
+//     }
+
+//     else if (pid < 0)
+//     {
+//       // Error forking
+//       perror("psh");
+//     }
+
+//     else
+//     {
+//       // Parent process
+//       do
+//       {
+//         wpid = waitpid(pid, &status, WUNTRACED);
+//       } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+//     }
+//   }
+//   else if (qtd_commands > 1)
+//   {
+//     //! criando um grupo de processos vacinados e executar os processos
+//     for (int i = 0; i < qtd_commands; i++)
+//     {
+//       pid = fork();
+
+//       if (pid == 0)
+//       {
+
+//         if (*first_pid == -1)
+//         {
+//           printf("Valor anterior do first_pid: %d\n", *first_pid);
+//           *first_pid = getpid();
+//           printf("O id do primeiro ----%d\n", *first_pid);
+//         }
+//         printf("----------------------\n");
+//         printf("Grupo do pai: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getpgid(getpid()));
+//         printf("ID DO FILHO: %d\n", getpid());
+//         setpgid(getpid(), *first_pid); //! setando o grupo do filho com id do filho
+//         printf("Grupo do pai: %d,Grupo desse processo Filho ALterado: %d\n", getpgid(getppid()), getpgid(getpid()));
+//         // Child process
+//         array_parameters = split_command_to_exec(command, array_parameters);
+//         if (execvp(array_parameters[0], array_parameters) == -1)
+//         {
+//           perror("psh");
+//         }
+//         exit(EXIT_FAILURE);
+//       }
+//     }
+//   }
+
+//   return 1;
+// }
+
+int psh_launch(char **commands_array, int qtd_commands, int *first_pid)
 {
   pid_t pid, wpid;
   int status;
@@ -124,9 +204,9 @@ int psh_launch(char *command, int qtd_commands)
       printf("Grupo do pai: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getpgid(getpid()));
       printf("ID DO FILHO: %d\n", getpid());
       setpgid(getpid(), getpid()); //! setando o grupo do filho com id do filho
-      printf("Grupo do pai: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getpgid(getpid()));
+      printf("Grupo do pai: %d,Grupo desse processo Filho N vacinado: %d\n", getpgid(getppid()), getpgid(getpid()));
       // Child process
-      array_parameters = split_command_to_exec(command, array_parameters);
+      array_parameters = split_command_to_exec(commands_array[0], array_parameters);
       if (execvp(array_parameters[0], array_parameters) == -1)
       {
         perror("psh");
@@ -151,7 +231,35 @@ int psh_launch(char *command, int qtd_commands)
   }
   else if (qtd_commands > 1)
   {
+    //! fazer pipes
     //! criando um grupo de processos vacinados e executar os processos
+    for (int i = 0; i < qtd_commands; i++)
+    {
+      pid = fork();
+
+      if (pid == 0)
+      {
+
+        if (*first_pid == -1 && teste == 0)
+        {
+          *first_pid = getpid();
+          printf("O id do primeiro ----%d\n", *first_pid);
+          teste = getpid();
+        }
+        printf("----------------------\n");
+        printf("Grupo do pai: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getpgid(getpid()));
+        printf("ID DO FILHO: %d\n", getpid());
+        setpgid(getpid(), (*first_pid)); //! setando o grupo do filho com id do filho
+        printf("Grupo do pai: %d,Grupo desse processo Filho ALterado: %d\n", getpgid(getppid()), getpgid(getpid()));
+        // Child process
+        array_parameters = split_command_to_exec(commands_array[i], array_parameters);
+        if (execvp(array_parameters[0], array_parameters) == -1)
+        {
+          perror("psh");
+        }
+        exit(EXIT_FAILURE);
+      }
+    }
   }
 
   return 1;
