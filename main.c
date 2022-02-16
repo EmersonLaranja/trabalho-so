@@ -11,10 +11,9 @@
 #define NAO_VACINADOS 4
 
 char msg[] = "Control - C pressed!\n";
-void catch_ctrl_c(int signo)
+void SIG_VAC(int signo)
 {
-  printf("Deu ruim - Sem control C");
-  exit(1);
+  printf("Desista - Estou Vacinado!");
 }
 
 int main(int argc, char const *argv[])
@@ -28,11 +27,16 @@ int main(int argc, char const *argv[])
   struct sigaction act;
   sigset_t sigset;
 
+  act.sa_handler = SIG_VAC;
   sigemptyset(&act.sa_mask);
   act.sa_flags = 0;
-  sigaddset(&act.sa_mask, SIGTSTP);
-  sigaddset(&act.sa_mask, SIGINT); /* acrescentar SIGINT */
-  sigaddset(&act.sa_mask, SIGQUIT);
+  // sigaddset(&act.sa_mask, SIGTSTP);
+  // sigaddset(&act.sa_mask, SIGINT); /* acrescentar SIGINT */
+  // sigaddset(&act.sa_mask, SIGQUIT);
+
+  sigaction(SIGINT, &act, NULL);
+  // sigaction(SIGQUIT, &act, NULL);
+  // sigaction(SIGTSTP, &act, NULL);
 
   if (pipe(pipe1) == -1)
   {
@@ -45,24 +49,31 @@ int main(int argc, char const *argv[])
   write(pipe1[1], &x, sizeof(x));
   // close(pipe1[1]);
 
-  if (sigprocmask(SIG_BLOCK, &act.sa_mask, NULL))
-    perror("sigprocmask");
+  // if (sigprocmask(SIG_BLOCK, &act.sa_mask, NULL))
+  //   perror("sigprocmask");
 
-  sigaction(SIGINT, &act, NULL);
-  // print_gandalf();
+  // sigaction(SIGQUIT, &act, NULL);
+  // sigaction(SIGTSTP, &act, NULL);
 
   //! trecho que funciona do código
   do
   {
     print_prompt();
 
-    //{1} PS aux
-    //{2}  grep -i "gandalf"
+    // scanf("%*[^\n]");
 
     commands_array = read_commands(&qtd_commands);
+    if (commands_array == NULL)
+    {
+      qtd_commands = 0;
+      continue;
+    }
 
     // print_commands(commands_array, &qtd_commands);
-    psh_launch(commands_array, qtd_commands, pipe1);
+    if (commands_array != NULL)
+    {
+      psh_launch(commands_array, qtd_commands, pipe1);
+    }
 
   } while (TRUE);
 

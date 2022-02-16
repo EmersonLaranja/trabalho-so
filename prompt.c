@@ -40,9 +40,16 @@ char **read_commands(int *qtd_commands)
 
   // retorna a quantidade de char
   int line = getline(&buffer_line, &buffer_line_size, stdin);
-
   // verificando se o comando é valido
-  if (line <= 1)
+
+  if (line == -1)
+  {
+
+    printf("\n");
+    return NULL;
+  }
+
+  if (line == 1)
   {
     printf("Digite um comando valido!\n");
     return NULL;
