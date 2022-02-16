@@ -23,16 +23,24 @@ int main(int argc, char const *argv[])
 {
   char **commands_array;
   int qtd_commands = 0;
+  int first_pid = -1;
   system("clear");
+  int pipe1[2];
 
   struct sigaction act;
   sigset_t sigset;
 
-/*   sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
-  /*   sigaddset(&act.sa_mask, SIGTSTP);
-    sigaddset(&act.sa_mask, SIGINT); /* acrescentar SIGINT */
+  /*   sigemptyset(&act.sa_mask);
+    act.sa_flags = 0;
+    /*   sigaddset(&act.sa_mask, SIGTSTP);
+      sigaddset(&act.sa_mask, SIGINT); /* acrescentar SIGINT */
   // sigaddset(&act.sa_mask, SIGQUIT);
+
+  if (pipe(pipe1) == -1)
+  {
+    perror("pipe");
+    exit(1);
+  }
 
   if (sigprocmask(SIG_BLOCK, &act.sa_mask, NULL))
     perror("sigprocmask");
@@ -51,7 +59,7 @@ int main(int argc, char const *argv[])
     commands_array = read_commands(&qtd_commands);
 
     // print_commands(commands_array, &qtd_commands);
-    launch_all_commands(commands_array, qtd_commands);
+    psh_launch(commands_array, qtd_commands, &first_pid);
 
   } while (TRUE);
 
