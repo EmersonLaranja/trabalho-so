@@ -10,10 +10,8 @@
 #define VACINADOS 2
 #define NAO_VACINADOS 4
 
-char msg[] = "Control - C pressed!\n";
-
-
-void SIG_VAC(int signo){
+void SIG_VAC(int signo)
+{
   printf("Desista - Estou Vacinado!\n");
 }
 
@@ -25,25 +23,10 @@ int main(int argc, char const *argv[])
   system("clear");
   int pipe1[2];
 
-  // struct sigaction act;
-  // sigset_t sigset;
-
-  // act.sa_handler = SIG_VAC;
-  // sigemptyset(&act.sa_mask);
-  // act.sa_flags = 0;
-  // sigaddset(&act.sa_mask, SIGTSTP);
-  // sigaddset(&act.sa_mask, SIGINT); /* acrescentar SIGINT */
-  // sigaddset(&act.sa_mask, SIGQUIT);
-
-  //sigaction(SIGINT, &act, NULL);
-  // sigaction(SIGQUIT, &act, NULL);
-  // sigaction(SIGTSTP, &act, NULL);
-
- 
-  //signal(SIGINT, SIG_VAC);
-
-  signal(SIGINT, SIG_VAC);  
-
+  // tratando sinais para psh
+  signal(SIGINT, SIG_VAC);
+  signal(SIGQUIT, SIG_VAC);
+  signal(SIGTSTP, SIG_VAC);
 
   if (pipe(pipe1) == -1)
   {
@@ -56,22 +39,15 @@ int main(int argc, char const *argv[])
   write(pipe1[1], &x, sizeof(x));
   // close(pipe1[1]);
 
-  // if (sigprocmask(SIG_BLOCK, &act.sa_mask, NULL))
-  //   perror("sigprocmask");
-
-  // sigaction(SIGQUIT, &act, NULL);
-  // sigaction(SIGTSTP, &act, NULL);
-
   //! trecho que funciona do código
   do
   {
-     
+
     print_prompt();
 
     // scanf("%*[^\n]");
 
     commands_array = read_commands(&qtd_commands);
-  
 
     // print_commands(commands_array, &qtd_commands);
     if (commands_array != NULL)
@@ -85,64 +61,3 @@ int main(int argc, char const *argv[])
 
   return 0;
 }
-
-/*
-int pid = fork();
-  // filho
-  if (pid == 0)
-  {
-    printf("Sou o filho %d Process Group: %d\n", getpid(), getpgrp());
-    // setpgid(0, getpid());//pega o id do processo que chamou e coloca como gpid
-    setpgid(0, 0);
-    printf("Sou o filho %d Process Group: %d\n", getpid(), getpgid(getpid()));
-  }
-  else
-  {
-    printf("Sou o pai %d  Process Group: %d %d\n", getpid(), getpgrp(), getpgid(getpid()));
-    // setpgid(pid, getpid());
-    // getpid nos segundo parametro muda o pgd do filho para o mesmo do pai
-    printf("alterando filho\n");
-    printf("testando\n");
-    printf("Processo G do filho agr %d\n", getpgid(pid));
-    // sleep(10000);
-  }
-*/
-
-/*
-
- int pid = fork();
-  int pid2 = fork();
-
-  if (pid == 0)
-  {
-    printf("Sou o filho 1 e tenho pid%d\n", getpid());
-    printf("Sou o filho 1 e tenho grupo de processos%d\n", getpgrp());
-    int pid3 = fork();
-    if (pid3 == 0)
-    {
-      printf("Sou o filho do filho 1 e tenho pid%d\n", getpid());
-      printf(" Sou o filho do filho 1 e Meu grupo de processo é %d\n", getpgrp());
-      setpgid(getppid(), getppid());
-      printf("Sou o filho do filho 1 e Meu grupo de processo Alterado é %d\n", getpgrp());
-    }
-  }
-  else if (pid2 == 0)
-  {
-    printf("Sou o filho 2 e tenho pid%d\n", getpid());
-    printf("Sou o filho 2 e Meu grupo de processo é %d\n", getpgrp());
-    int pid4 = fork();
-    if (pid4 == 0)
-    {
-      printf("Sou o filho do filho 2 e tenho pid%d\n", getpid());
-      printf("Sou o filho do filho 2 e Meu grupo de processo é %d\n", getpgrp());
-      setpgid(getppid(), getpid());
-      printf("Sou o filho do filho 2 e Meu grupo de processo Alterado é %d\n", getpgrp());
-    }
-  }
-  else
-  {
-    printf("Sou o pai e tenho pid%d\n", getpid());
-    wait(NULL);
-  }
-
- */
