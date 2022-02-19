@@ -13,6 +13,7 @@
 void SIG_VAC(int signo)
 {
   printf("Desista - Estou Vacinado!\n");
+  kill(-1, SIGKILL);
 }
 
 int main(int argc, char const *argv[])
@@ -27,6 +28,8 @@ int main(int argc, char const *argv[])
   signal(SIGINT, SIG_VAC);
   signal(SIGQUIT, SIG_VAC);
   signal(SIGTSTP, SIG_VAC);
+  signal(SIGTERM, SIG_VAC);
+  signal(SIGUSR1, SIG_VAC);
 
   if (pipe(pipe1) == -1)
   {
