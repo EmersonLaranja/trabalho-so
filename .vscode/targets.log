@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Wed Feb 16 10:46:34 2022
+# Make data base, printed on Tue Mar  1 20:19:53 2022
 
 # Variables
 
@@ -39,7 +39,7 @@ GDMSESSION = ubuntu
 # environment
 XMODIFIERS = @im=ibus
 # makefile
-CURDIR := /home/aandrelouis/Área de Trabalho/Trabalho So/trabalho-so
+CURDIR := /home/aandrelouis/Área de Trabalho/Trabalho So/trabalho-so/trabalho-so
 # makefile
 SHELL = /bin/sh
 # environment
@@ -48,9 +48,8 @@ SNAP_DATA = /var/snap/code/88
 VTE_VERSION = 6003
 # environment
 VSCODE_NLS_CONFIG = {"locale":"pt-br","availableLanguages":{},"_languagePackSupport":true}
- 
 # environment
-JOURNAL_STREAM = 8:43664
+JOURNAL_STREAM = 8:41451
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
 # environment
@@ -68,15 +67,15 @@ USERNAME = aandrelouis
 # environment
 XDG_DATA_DIRS = /usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
 # environment
-DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=4b0e6c54e39fa774fa7a9847620cd258
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=64fcc65eb85b62edd234220f621e990f
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-MANAGERPID = 1088
+MANAGERPID = 1053
 # environment
 LESSOPEN = | /usr/bin/lesspipe %s
 # environment
-VSCODE_CWD = /home/aandrelouis/Área de Trabalho/Trabalho So/trabalho-so
+VSCODE_CWD = /home/aandrelouis/Área de Trabalho/Trabalho So/trabalho-so/trabalho-so
 # environment
 GSETTINGS_SCHEMA_DIR = /snap/code/88/usr/share/glib-2.0/schemas
 # default
@@ -86,7 +85,7 @@ PATH = /home/aandrelouis/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux/gcc-arm-non
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
-SESSION_MANAGER = local/aandrelouis:@/tmp/.ICE-unix/1604,unix/aandrelouis:/tmp/.ICE-unix/1604
+SESSION_MANAGER = local/aandrelouis:@/tmp/.ICE-unix/1588,unix/aandrelouis:/tmp/.ICE-unix/1588
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
@@ -104,7 +103,7 @@ DISABLE_WAYLAND = 1
 # environment
 VSCODE_CRASH_REPORTER_START_OPTIONS = {"companyName":"Microsoft","productName":"VSCode","submitURL":"appcenter://code?aid=fba07a4d-84bd-4fc8-a125-9640fc8ce171&uid=9213ceef-68d1-4d73-ba39-83f856476fcc&iid=9213ceef-68d1-4d73-ba39-83f856476fcc&sid=9213ceef-68d1-4d73-ba39-83f856476fcc","uploadToServer":true}
 # environment
-INVOCATION_ID = 90cfdefed46a49bcb7838ac23035b39c
+INVOCATION_ID = 024fb3b0bdaf416c83d8099b99884d07
 # environment
 GDK_PIXBUF_MODULEDIR = /snap/code/88/usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
 # default
@@ -124,11 +123,11 @@ VSCODE_PIPE_LOGGING = true
 # environment
 SNAP_INSTANCE_KEY = 
 # environment
-PWD = /home/aandrelouis/Área de Trabalho/Trabalho So/trabalho-so
+PWD = /home/aandrelouis/Área de Trabalho/Trabalho So/trabalho-so/trabalho-so
 # default
 .LOADED := 
 # environment
-SSH_AGENT_PID = 1522
+SSH_AGENT_PID = 1530
 # environment
 ORIGINAL_XDG_CURRENT_DESKTOP = ubuntu:GNOME
 # environment
@@ -146,7 +145,7 @@ VSCODE_CODE_CACHE_PATH = /home/aandrelouis/.config/Code/CachedData/f80445acd5a3d
 # environment
 LOGNAME = aandrelouis
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
 # environment
 SNAP_LIBRARY_PATH = /var/lib/snapd/lib/gl:/var/lib/snapd/lib/gl32:/var/lib/snapd/void
 # environment
@@ -180,7 +179,7 @@ SHLVL = 1
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-f88ec56e-c327-487f-b325-1ddcea12344f.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-fc61763d-7abc-44c4-a545-d33a02ae4f1c.sock
 # default
 MAKE_VERSION := 4.2.1
 # environment
@@ -234,11 +233,11 @@ LC_ALL = C
 # environment
 DBUS_STARTER_BUS_TYPE = session
 # environment
-GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/792ed584_3567_478d_b70d_57eae0093b3e
+GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/8b3e17b1_2263_4d73_b8b3_39bf07f3ddf0
 # automatic
 ^F = $(notdir $^)
 # environment
-GNOME_TERMINAL_SERVICE = :1.1027
+GNOME_TERMINAL_SERVICE = :1.353
 # default
 SUFFIXES := 
 # environment
@@ -256,9 +255,9 @@ LANG = C
 # environment
 TERM = xterm-256color
 # environment
-VSCODE_PID = 21782
+VSCODE_PID = 15791
 # environment
-DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=4b0e6c54e39fa774fa7a9847620cd258
+DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=64fcc65eb85b62edd234220f621e990f
 # variable set hash-table stats:
 # Load=124/1024=12%, Rehash=0, Collisions=16/152=11%
 
@@ -268,7 +267,7 @@ DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=4b0e6c54e39fa774fa7a984
 
 # Directories
 
-# . (device 2054, inode 2188022): 12 files, no impossibilities.
+# . (device 2054, inode 2459045): 12 files, no impossibilities.
 
 # 12 files, no impossibilities in 1 directories.
 
@@ -298,12 +297,12 @@ all:
 # automatic
 # < := 
 # automatic
+ 
 # ^ := 
 # automatic
 # ? := 
 # variable set hash-table stats:
 # Load=8/32=25%, Rehash=0, Collisions=1/11=9%
- 
 #  recipe to execute (from 'Makefile', line 2):
 	gcc *.c -o main
 
@@ -316,7 +315,7 @@ all:
 # Not a target:
 Makefile:
 #  Implicit rule search has been done.
-#  Last modified 2022-02-01 21:37:24.57997123
+#  Last modified 2022-03-01 20:19:38.311484802
 #  File has been updated.
 #  Successfully updated.
 
@@ -362,6 +361,6 @@ run:
 # strcache performance: lookups = 30 / hit rate = 33%
 # hash-table stats:
 # Load=20/8192=0%, Rehash=0, Collisions=1/30=3%
-# Finished Make data base on Wed Feb 16 10:46:34 2022
+# Finished Make data base on Tue Mar  1 20:19:53 2022
 
  

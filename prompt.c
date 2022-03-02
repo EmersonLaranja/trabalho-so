@@ -11,6 +11,12 @@ void SIG_N_Morre(int signo)
   printf("Vacinado!\n");
 }
 
+void SIG_PAI_USR1(int signo)
+{
+  printf("Recebi usr1 - vou morrer\n");
+  kill(getppid() , SIGUSR1);
+}
+
 void print_prompt(void)
 {
   printf("psh> ");
@@ -112,7 +118,7 @@ static char **split_command_to_exec(char *command, char **command_splited)
   }
 }
 
-int psh_launch(char **commands_array, int qtd_commands, int pipe1[2])
+int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_list)
 {
   pid_t pid, wpid;
   int status;
@@ -123,14 +129,17 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2])
     pid = fork();
     if (pid == 0) //! filho - cada um tem que ter o seu grupo
     {
+      //! filho
       signal(SIGINT, SIG_DFL);
       signal(SIGTSTP, SIG_DFL);
       signal(SIGQUIT, SIG_DFL);
+      signal(SIGUSR1, SIG_PAI_USR1);
 
       printf("Grupo do pai: %d,ID DO PAI: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getppid(), getpgid(getpid()));
       printf("ID DO FILHO: %d\n", getpid());
       setpgid(getpid(), getpid()); //! setando o grupo do filho com id do filho
       printf("Grupo do pai: %d,Grupo desse processo Filho N vacinado: %d\n", getpgid(getppid()), getpgid(getpid()));
+      
       // Child process
       array_parameters = split_command_to_exec(commands_array[0], array_parameters);
       if (execvp(array_parameters[0], array_parameters) == -1)
@@ -149,10 +158,9 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2])
     else
     {
       // Parent process
-      do
-      {
-        wpid = waitpid(pid, &status, WUNTRACED);
-      } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+      //! adicionando o pid do filho na lista
+       insertList(pid_list, pid);
+
     }
   }
   else if (qtd_commands > 1)
@@ -162,11 +170,11 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2])
     for (int i = 0; i < qtd_commands; i++)
     {
       pid = fork();
+      int x = 0;
 
       if (pid == 0)
       {
-
-        int x = 0;
+        x=0;
         read(pipe1[0], &x, sizeof(x));
         printf("Valor do pipe: %d\n", x);
         if (x == -1)
@@ -206,6 +214,16 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2])
         }
 
         exit(EXIT_FAILURE);
+      }
+      else if(pid < 0)
+      {
+        perror("psh");
+      }
+      else
+      {
+        //! adicionando o gpid da lista de vacinados
+        
+          insertList(pid_list, pid);
       }
     }
   }
