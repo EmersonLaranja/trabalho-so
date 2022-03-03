@@ -70,7 +70,7 @@ void destroyList(List *list)
         free(aux); 
         aux = prox;
     }
-   // free(list); //não liberar a lista
+    free(list); //não liberar a lista
 }
 
 

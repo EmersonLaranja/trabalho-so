@@ -1,21 +1,14 @@
 #include "prompt.h"
 #include <signal.h>
+#include <fcntl.h>
+#include <string.h>
+
+#include <stdio.h>
 #define DELIMITER_TOKEN ";"
 #define MAX_COMMAND 5
 #define MAX_ARGUMENTS 20
 
-int teste = 0;
-
-void SIG_N_Morre(int signo)
-{
-  printf("Vacinado!\n");
-}
-
-void SIG_PAI_USR1(int signo)
-{
-  printf("Recebi usr1 - vou morrer\n");
-  kill(getppid() , SIGUSR1);
-}
+void redirect_command(char* file);
 
 void print_prompt(void)
 {
@@ -66,11 +59,7 @@ char **read_commands(int *qtd_commands)
 
   count_qnt_commands(buffer_line, qtd_commands);
 
-  /*
-  ?ficar de olho
-  recomecando leitura para armazenar comandos
-  rewind(stdin);*/
-
+  // alocando memoria para o array de comandos
   char **commands_array = (char **)malloc(sizeof(char *) * (*qtd_commands));
 
   char *command = strtok(buffer_line, DELIMITER_TOKEN);
@@ -86,14 +75,13 @@ char **read_commands(int *qtd_commands)
     i++;
   }
 
-  // coma
 
   free(buffer_line);
 
   return commands_array;
 }
 
-static char **split_command_to_exec(char *command, char **command_splited)
+static char **split_command_to_exec(char *command, char **command_splited,char delimiter)
 {
 
   int count = 0;
@@ -103,7 +91,7 @@ static char **split_command_to_exec(char *command, char **command_splited)
   for (int i = 0; i < strlen(command); i++)
   {
 
-    token = strtok(command, " ");
+    token = strtok(command, &delimiter);
     int flag = 0;
     //! ajustar free e max_arguments numero
     command_splited = (char **)malloc(sizeof(char *) * MAX_ARGUMENTS);
@@ -111,7 +99,7 @@ static char **split_command_to_exec(char *command, char **command_splited)
     {
       command_splited[count] = strdup(token);
       count++;
-      token = strtok(NULL, " ");
+      token = strtok(NULL, &delimiter);
     }
 
     return command_splited;
@@ -130,18 +118,26 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
     if (pid == 0) //! filho - cada um tem que ter o seu grupo
     {
       //! filho
+      if(strcmp(commands_array[0], "term") == 0){
+        kill(getpid(), SIGUSR2);
+      }
+
+      //verificando se é um redirecionamento com '>' e fazendo os tratamentos
+      if (strstr(commands_array[0], ">") != NULL)
+      {
+        array_parameters = split_command_to_exec(commands_array[0], array_parameters, '>'); 
+        commands_array[0] = array_parameters[0];
+        printf("NOME DO ARQUIVO:%s\n", array_parameters[1]);
+        redirect_command(array_parameters[1]);
+       // redirect_command(strstr(array_parameters[0], ">"));
+      }
       signal(SIGINT, SIG_DFL);
       signal(SIGTSTP, SIG_DFL);
       signal(SIGQUIT, SIG_DFL);
-      signal(SIGUSR1, SIG_PAI_USR1);
-
-      printf("Grupo do pai: %d,ID DO PAI: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getppid(), getpgid(getpid()));
-      printf("ID DO FILHO: %d\n", getpid());
-      setpgid(getpid(), getpid()); //! setando o grupo do filho com id do filho
-      printf("Grupo do pai: %d,Grupo desse processo Filho N vacinado: %d\n", getpgid(getppid()), getpgid(getpid()));
-      
+    
       // Child process
-      array_parameters = split_command_to_exec(commands_array[0], array_parameters);
+      char delimiter=' ';
+      array_parameters = split_command_to_exec(commands_array[0], array_parameters,delimiter);
       if (execvp(array_parameters[0], array_parameters) == -1)
       {
         perror("psh");
@@ -176,7 +172,7 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
       {
         x=0;
         read(pipe1[0], &x, sizeof(x));
-        printf("Valor do pipe: %d\n", x);
+       // printf("Valor do pipe: %d\n", x);
         if (x == -1)
         {
           int fist = getpid();
@@ -195,14 +191,9 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
           close(pipe1[1]);
         }
 
-        printf("\n----------------------\n");
-        printf("Grupo do pai: %d,Grupo desse processo Filho: %d\n", getpgid(getppid()), getpgid(getpid()));
-        printf("ID DO FILHO: %d\n", getpid());
-        int seila = setpgid(getpid(), x); //! setando o grupo do filho com id do filho
-        printf("\t\t\t\tHORA DA VERDADE, VOCES ESTAO PRONTOS?: %d\n", seila);
-        printf("Grupo do pai: %d,Grupo desse processo Filho ALterado: %d\n", getpgid(getppid()), getpgid(getpid()));
         // Child process
-        array_parameters = split_command_to_exec(commands_array[i], array_parameters);
+        char delimiter=' ';
+        array_parameters = split_command_to_exec(commands_array[i], array_parameters,delimiter);
 
         signal(SIGINT, SIG_IGN); //! ignorando sinal de interrupção, vão continuar apos o exec
         signal(SIGTSTP, SIG_IGN);
@@ -212,7 +203,6 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
         {
           perror("psh");
         }
-
         exit(EXIT_FAILURE);
       }
       else if(pid < 0)
@@ -221,8 +211,7 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
       }
       else
       {
-        //! adicionando o gpid da lista de vacinados
-        
+        //! adicionando o pid da lista de vacinados
           insertList(pid_list, pid);
       }
     }
@@ -274,6 +263,16 @@ void free_commands_array(char **commands_array, int qtd_commands)
   free(commands_array);
 }
 
-/*
-ping google.com;ping youtube.com; ping firefox.com
-*/
+//function to write the output of a process in file
+//function to print the output of exec in the file
+void redirect_command(char* file){
+  int fd=open(file,O_WRONLY|O_CREAT|O_TRUNC,0644);
+  if(fd==-1){
+    perror("psh");
+    exit(EXIT_FAILURE);
+  }
+  if(dup2(fd,STDOUT_FILENO)==-1){
+    perror("psh");
+    exit(EXIT_FAILURE);
+  }
+}
