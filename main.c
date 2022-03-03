@@ -87,7 +87,7 @@ int main(int argc, char const *argv[])
 }
 
 //! verificar depois sobre matar todos os pids de vaciandos e nao vacinados
-//xcalc;xcalc;ping google.com
+//! dá para otimizar matando o grupo de vacinados ao inves de cada um separado
 // ./loop;./loop; xcalc; xcalc; ping google.com
 
 
