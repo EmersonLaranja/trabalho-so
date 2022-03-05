@@ -1,9 +1,5 @@
 #include "prompt.h"
-#include <signal.h>
-#include <fcntl.h>
-#include <string.h>
-#include <stdio.h>
-#include <termios.h>
+
 
 #define DELIMITER_TOKEN ";"
 #define MAX_COMMAND 5
@@ -12,7 +8,8 @@
 char* remove_spaces(char* command);
 
 
- int handle_SIGUSR1(int status,List* pid_list){
+//função para veriifcar se foi recebido um um sinal SGUSR1, caso recebido, destroy todos os processos.
+int handle_SIGUSR1(int status,List* pid_list){
     if(WTERMSIG(status) == SIGUSR1){
         destroyList(pid_list);
         pid_list = initList();
@@ -20,16 +17,18 @@ char* remove_spaces(char* command);
         return 1;
       }
       return 0;
- };
+};
 
- int handle_SIGUSR2(int status,List* pid_list){
+//função para veriifcar se foi recebido um um sinal SGUSR2 (term), caso recebido, destroy todos os processos.
+int handle_SIGUSR2(int status,List* pid_list){
    if(WTERMSIG(status) == SIGUSR2){
         destroyList(pid_list);
         return 1;
       }
       return 0;
- };
+};
 
+//função para redirecionar a escrita para um arquivo
 void redirect_command(char* file);
 
 void print_prompt(void)
@@ -37,13 +36,15 @@ void print_prompt(void)
   printf("psh> ");
 }
 
+//Handle para a psh para os sinais definidos
 void SIG_VAC(int signo){
   printf("Desista - Estou Vacinado!\n");
 }
 
+//Função para contar a quantidade de comandos
 static void count_qnt_commands(char *line, int *qtd_comands)
 {
-  // contando qnt comandos
+  
   for (int i = 0; i < strlen(line); i++)
   {
     if (line[i] == ';')
@@ -52,23 +53,17 @@ static void count_qnt_commands(char *line, int *qtd_comands)
     }
   }
 }
+
+//Definindo tratadores para os sinais para psh
 void block_signals(){
-  //* Definindo tratadores para os sinais para psh
   signal(SIGTERM, SIG_VAC);
   signal(SIGUSR1, SIG_VAC);
-  //signal(SIGINT, SIG_VAC); 
-  //signal(SIGQUIT, SIG_VAC);
+  signal(SIGINT, SIG_VAC); 
+  signal(SIGQUIT, SIG_VAC);
   signal(SIGTSTP, SIG_VAC);
 };
 
-void print_commands(char **commands_array, int *qtd_commands)
-{
-  for (int i = 0; i < *qtd_commands; i++)
-  {
-    printf("%s\n", commands_array[i]);
-  }
-}
-
+//Função que realiza a leitura dos comandos
 char **read_commands(int *qtd_commands)
 {
 
@@ -101,7 +96,6 @@ char **read_commands(int *qtd_commands)
   *qtd_commands = 0;
   while (command != NULL && *qtd_commands < MAX_COMMAND)
   {
-
     (*qtd_commands)++;
     char* new_comamnd = remove_spaces(strdup(command));
     commands_array[i] = new_comamnd;
@@ -116,6 +110,7 @@ char **read_commands(int *qtd_commands)
   return commands_array;
 }
 
+//Função que faz o split dos comandos de acordo com um delimitador
 static char **split_command_to_exec(char *command, char **command_splited,char delimiter)
 {
 
@@ -128,7 +123,6 @@ static char **split_command_to_exec(char *command, char **command_splited,char d
 
     token = strtok(command, &delimiter);
     int flag = 0;
-    //! ajustar free e max_arguments numero
     command_splited = (char **)malloc(sizeof(char *) * MAX_ARGUMENTS);
     while (token != NULL)
     {
@@ -136,38 +130,36 @@ static char **split_command_to_exec(char *command, char **command_splited,char d
       count++;
       token = strtok(NULL, &delimiter);
     }
-
+    
     return command_splited;
   }
 }
 
+//função que sera responsavel por colocar o grupo de processos em background para foreground durante 30s
 void fg(int pgid){
   tcsetpgrp(0, pgid); //coloca o grupo em fg
   
-  sleep(10); //espera 30 segundos
+  sleep(3); //espera 30 segundos
   signal(SIGTTOU, SIG_IGN);//ignora o signal
 
   
   tcsetpgrp(0, getppid());//coloca o grupo em bg
   
   signal(SIGTTOU, SIG_DFL);//volta ao normal
-  
-  // tcsetpgrp(0, getppid()); //coloca o grupo em fg
-
 }
 
+//função que dá o exec para cada comando, definindo seus handlers
 int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_list)
 {
   pid_t pid, wpid;
   int status;
   char **array_parameters;
 
-  if (qtd_commands == 1) // Não vacinados
+  if (qtd_commands == 1) // quando o processo vai pertencer ao grupo de não vacinados
   {
     pid = fork();
-    if (pid == 0) //! filho - cada um tem que ter o seu grupo
+    if (pid == 0) // filho - cada um tem que ter o seu grupo
     {
-      //! filho
       //* verificar se é finalizador
       if(strcmp(commands_array[0], "term") == 0){
         kill(getpid(), SIGUSR2);
@@ -176,11 +168,12 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
       //* verificar se é fg
       if(strcmp(commands_array[0], "fg") == 0){
         int y=0;
+        //lẽ e escreve no pipe o pgid do grupo de vacinados
         read(pipe1[0], &y, sizeof(y));
         write(pipe1[1], &y, sizeof(y));
         close(pipe1[0]);
         close(pipe1[1]);
-        if(y!=-1){
+        if(y!=-1){//se for -1 n existe o grupo de vacinados
           fg(y);
         }
       }
@@ -188,18 +181,17 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
       //verificando se é um redirecionamento com '>' e fazendo os tratamentos
       if (strstr(commands_array[0], ">") != NULL)
       {
-        array_parameters = split_command_to_exec(commands_array[0], array_parameters, '>'); 
+        array_parameters = split_command_to_exec(commands_array[0], array_parameters, '>'); //separando os parametros do comando
         commands_array[0] = array_parameters[0];
-        char* new_command = remove_spaces( array_parameters[1]);
-        redirect_command(new_command);       
+        char* new_command = remove_spaces( array_parameters[1]); //removendo os espaços para criar o arquivo sem espaços
+        redirect_command(new_command);   //redirecionando o resultado para o arquivo    
       }
       int new_pgid = setpgid(getpid(),getpid());
 
-      signal(SIGINT, SIG_DFL);
+      signal(SIGINT, SIG_DFL); //definindo os handles default para os sinais
       signal(SIGTSTP, SIG_DFL);
       signal(SIGQUIT, SIG_DFL);
-    
-      // Child process
+  
       char delimiter=' ';
       array_parameters = split_command_to_exec(commands_array[0], array_parameters,delimiter);
       if (execvp(array_parameters[0], array_parameters) == -1)
@@ -218,15 +210,13 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
     else
     {
       // Parent process
-      //! adicionando o pid do filho na lista
+      // adicionando o pid do filho na lista
        insertList(pid_list, pid);
-
     }
   }
   else if (qtd_commands > 1)
   {
-    //! fazer pipes
-    //! criando um grupo de processos vacinados e executar os processos
+    // criando um grupo de processos vacinados e executar os processos
     for (int i = 0; i < qtd_commands; i++)
     {
       pid = fork();
@@ -235,21 +225,23 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
       if (pid == 0)
       {
         x=0;
+        //le o valor do pipe
         read(pipe1[0], &x, sizeof(x));
-        if (x == -1)
+        if (x == -1) 
         {
-          int fist = getpid();
-          x = fist;
+          int first = getpid();//se for o primeiro processo, armazena o PID para tornar esse o pgid do grupo de vacinados
+          x = first;
 
-          write(pipe1[1], &fist, sizeof(fist));
-          close(pipe1[0]);
-          close(pipe1[1]);
+          write(pipe1[1], &first, sizeof(first)); //escreve no pipe o pid do grupo de vacinados
+          close(pipe1[0]);  //fecha o pipe de leitura
+          close(pipe1[1]);  //fecha o pipe de escrita
         }
         else
         {
-          write(pipe1[1], &x, sizeof(x));
-          close(pipe1[0]);
-          close(pipe1[1]);
+          //escrevendo o valor que será o pgid 
+          write(pipe1[1], &x, sizeof(x)); //escreve no pipe o pid do grupo de vacinados
+          close(pipe1[0]);  //fecha o pipe de leitura
+          close(pipe1[1]);  //fecha o pipe de escrita
         }
 
         //* setando o novo pgid
@@ -260,14 +252,15 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
         array_parameters = split_command_to_exec(commands_array[i], array_parameters,delimiter);
 
 
-        signal(SIGINT, SIG_IGN); //! ignorando sinal de interrupção, vão continuar apos o exec
+        signal(SIGINT, SIG_IGN); // ignorando sinal de interrupção,que vão continuar apos o exec
         signal(SIGTSTP, SIG_IGN);
         signal(SIGQUIT, SIG_IGN);
 
-        if (execvp(array_parameters[0], array_parameters) == -1)
+        if (execvp(array_parameters[0], array_parameters) == -1) //executando o comando
         {
           perror("psh");
         }
+
         exit(EXIT_FAILURE);
       }
       else if(pid < 0)
@@ -276,7 +269,7 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
       }
       else
       {
-        //! adicionando o pid da lista de vacinados
+        // adicionando o pid da lista de vacinados
           insertList(pid_list, pid);
       }
     }
@@ -319,31 +312,22 @@ void print_gandalf(void)
          " ____Cooperation was the morally right choice!___ \n");
 }
 
-void free_commands_array(char **commands_array, int qtd_commands)
-{
-  for (int i = 0; i < qtd_commands; i++)
-  {
-    free(commands_array[i]);
-  }
-  free(commands_array);
-}
 
-//function to write the output of a process in file
-//function to print the output of exec in the file
-void redirect_command(char* file){
-  int fd=open(file,O_WRONLY|O_CREAT|O_TRUNC,0644);
-  if(fd==-1){
-    perror("psh");
-    exit(EXIT_FAILURE);
+//Função que imprime a saida de um processo em um arquivo
+void redirect_command(char* f){
+  int arquivo=open(f,O_WRONLY|O_CREAT|O_TRUNC,0644); //criando o arquivo
+  if(arquivo==-1){ //se não conseguir abrir o arquivo
+    perror("psh");  //imprime o erro
+    exit(EXIT_FAILURE); //encerra o programa
   }
-  if(dup2(fd,STDOUT_FILENO)==-1){
-    perror("psh");
-    exit(EXIT_FAILURE);
+  if(dup2(arquivo,STDOUT_FILENO)==-1){ //se não conseguir duplicar o arquivo
+    perror("psh"); //imprime o erro
+    exit(EXIT_FAILURE);//encerra o programa
   }
 }
 
 
-//function to remove spaces before and after the command
+//Função que remove os espaços antes e depois do comando
 char* remove_spaces(char* command){
   int i=0;
   while(command[i]==' '){

@@ -3,9 +3,3 @@ all:
 
 run:
 	./main
-
-test:
-	gcc test.c -o test 
-	
-runtest:
-	./test

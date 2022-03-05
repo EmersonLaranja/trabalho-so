@@ -23,7 +23,7 @@ int main(int argc, char const *argv[])
   system("clear");
 
 
-  block_signals();
+  block_signals();//bloqueia os sinais na psh
   
   // criando pipe
   if (pipe(pipe1) == -1)
@@ -32,8 +32,9 @@ int main(int argc, char const *argv[])
     exit(1);
   }
 
-  int x = -1;
-  write(pipe1[1], &x, sizeof(x));
+  int x = -1; // variavel para verificar o primeiro processo que acessa o pipe 
+  write(pipe1[1], &x, sizeof(x));//escreve no pipe o valor -1
+
 
   do
   {    
@@ -43,11 +44,11 @@ int main(int argc, char const *argv[])
 
     if (commands_array != NULL)
     {
-      psh_launch(commands_array, qtd_commands, pipe1, pid_list);
+      psh_launch(commands_array, qtd_commands, pipe1, pid_list); //executa os comandos
     }
 
     int status;//* status para fazer autopsia nos filhos
-    waitpid(-1, &status,WNOHANG);
+    waitpid(-1, &status,WNOHANG); 
 
 
 
@@ -74,8 +75,6 @@ xcalc;
 ./loop       ; ./loop      ;
     xcalc; xcalc; ls;ps ;
 echo oi;
-pstree | grep a;
-code .;
 
 ./loop;./loop;./loop;ls;
 */

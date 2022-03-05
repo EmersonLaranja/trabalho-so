@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 #include "list.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,9 +30,6 @@ List *initList(void)
     return nova;
 }
 
-
-
-
 void insertList(List *list, int pid)
 {
     Celula* cel = (Celula*)malloc(sizeof(Celula));
@@ -51,7 +43,7 @@ void insertList(List *list, int pid)
     }
 }
 
-
+//Função que mata os filhos pelo pid salvo na lista
 void destroyList(List *list)
 {
     Celula* aux= list->prim;
@@ -59,7 +51,7 @@ void destroyList(List *list)
 
     while( aux != NULL){
         prox = aux->prox;
-        kill(aux->pid, SIGKILL);
+        kill(aux->pid, SIGKILL); //matando o processo de acordo com o PID
         free(aux); 
         aux = prox;
     }
