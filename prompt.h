@@ -17,7 +17,7 @@
 
 void print_prompt(void);
 void block_signals(void);
- void handle_SIGUSR1(int status,List* pid_list);
+ int handle_SIGUSR1(int status,List* pid_list);
 
  int handle_SIGUSR2(int status,List* pid_list);
 

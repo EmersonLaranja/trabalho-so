@@ -12,12 +12,14 @@
 char* remove_spaces(char* command);
 
 
- void handle_SIGUSR1(int status,List* pid_list){
+ int handle_SIGUSR1(int status,List* pid_list){
     if(WTERMSIG(status) == SIGUSR1){
         destroyList(pid_list);
         pid_list = initList();
         print_gandalf();
+        return 1;
       }
+      return 0;
  };
 
  int handle_SIGUSR2(int status,List* pid_list){
@@ -52,11 +54,11 @@ static void count_qnt_commands(char *line, int *qtd_comands)
 }
 void block_signals(){
   //* Definindo tratadores para os sinais para psh
+  signal(SIGTERM, SIG_VAC);
   signal(SIGUSR1, SIG_VAC);
   //signal(SIGINT, SIG_VAC); 
   //signal(SIGQUIT, SIG_VAC);
   signal(SIGTSTP, SIG_VAC);
-  signal(SIGTERM, SIG_VAC);
 };
 
 void print_commands(char **commands_array, int *qtd_commands)
@@ -358,3 +360,4 @@ char* remove_spaces(char* command){
   new_command[j-i+1]='\0';
   return new_command;
 }
+

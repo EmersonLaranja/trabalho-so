@@ -49,17 +49,19 @@ int main(int argc, char const *argv[])
     int status;//* status para fazer autopsia nos filhos
     waitpid(-1, &status,WNOHANG);
 
+
+
       //* verificando se o processo filho morreu por causa do SIGUSR1
       //* começou a sepa do sigusr1, todos filhos morrem
-      handle_SIGUSR1(status,pid_list);
-     
-
+      if(handle_SIGUSR1(status,pid_list)){
+         status = 0;
+      }
+      
       //* verificando se o processo filho morreu por causa do SIGUSR2
       //* identificando que o term foi digitado
       if(handle_SIGUSR2(status,pid_list))
         break;
       
-    
 
   } while (TRUE);
 
@@ -71,7 +73,6 @@ int main(int argc, char const *argv[])
 xcalc;
 ./loop       ; ./loop      ;
     xcalc; xcalc; ls;ps ;
-;    ; ls;
 echo oi;
 pstree | grep a;
 code .;
