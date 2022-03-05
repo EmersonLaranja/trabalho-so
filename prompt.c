@@ -2,17 +2,41 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <string.h>
-
 #include <stdio.h>
+#include <termios.h>
+
 #define DELIMITER_TOKEN ";"
 #define MAX_COMMAND 5
 #define MAX_ARGUMENTS 20
+
+char* remove_spaces(char* command);
+
+
+ void handle_SIGUSR1(int status,List* pid_list){
+    if(WTERMSIG(status) == SIGUSR1){
+        destroyList(pid_list);
+        pid_list = initList();
+        print_gandalf();
+      }
+ };
+
+ int handle_SIGUSR2(int status,List* pid_list){
+   if(WTERMSIG(status) == SIGUSR2){
+        destroyList(pid_list);
+        return 1;
+      }
+      return 0;
+ };
 
 void redirect_command(char* file);
 
 void print_prompt(void)
 {
   printf("psh> ");
+}
+
+void SIG_VAC(int signo){
+  printf("Desista - Estou Vacinado!\n");
 }
 
 static void count_qnt_commands(char *line, int *qtd_comands)
@@ -26,6 +50,14 @@ static void count_qnt_commands(char *line, int *qtd_comands)
     }
   }
 }
+void block_signals(){
+  //* Definindo tratadores para os sinais para psh
+  signal(SIGUSR1, SIG_VAC);
+  //signal(SIGINT, SIG_VAC); 
+  //signal(SIGQUIT, SIG_VAC);
+  signal(SIGTSTP, SIG_VAC);
+  signal(SIGTERM, SIG_VAC);
+};
 
 void print_commands(char **commands_array, int *qtd_commands)
 {
@@ -48,7 +80,6 @@ char **read_commands(int *qtd_commands)
 
   if (line == 1)
   {
-    printf("Digite um comando valido!\n");
     return NULL;
   }
   // tem pelo menos 1 comando
@@ -70,10 +101,12 @@ char **read_commands(int *qtd_commands)
   {
 
     (*qtd_commands)++;
-    commands_array[i] = strdup(command);
+    char* new_comamnd = remove_spaces(strdup(command));
+    commands_array[i] = new_comamnd;
     command = strtok(NULL, DELIMITER_TOKEN);
     i++;
   }
+
 
 
   free(buffer_line);
@@ -106,6 +139,21 @@ static char **split_command_to_exec(char *command, char **command_splited,char d
   }
 }
 
+void fg(int pgid){
+  tcsetpgrp(0, pgid); //coloca o grupo em fg
+  
+  sleep(10); //espera 30 segundos
+  signal(SIGTTOU, SIG_IGN);//ignora o signal
+
+  
+  tcsetpgrp(0, getppid());//coloca o grupo em bg
+  
+  signal(SIGTTOU, SIG_DFL);//volta ao normal
+  
+  // tcsetpgrp(0, getppid()); //coloca o grupo em fg
+
+}
+
 int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_list)
 {
   pid_t pid, wpid;
@@ -118,8 +166,21 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
     if (pid == 0) //! filho - cada um tem que ter o seu grupo
     {
       //! filho
+      //* verificar se é finalizador
       if(strcmp(commands_array[0], "term") == 0){
         kill(getpid(), SIGUSR2);
+      }
+
+      //* verificar se é fg
+      if(strcmp(commands_array[0], "fg") == 0){
+        int y=0;
+        read(pipe1[0], &y, sizeof(y));
+        write(pipe1[1], &y, sizeof(y));
+        close(pipe1[0]);
+        close(pipe1[1]);
+        if(y!=-1){
+          fg(y);
+        }
       }
 
       //verificando se é um redirecionamento com '>' e fazendo os tratamentos
@@ -127,10 +188,11 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
       {
         array_parameters = split_command_to_exec(commands_array[0], array_parameters, '>'); 
         commands_array[0] = array_parameters[0];
-        printf("NOME DO ARQUIVO:%s\n", array_parameters[1]);
-        redirect_command(array_parameters[1]);
-       // redirect_command(strstr(array_parameters[0], ">"));
+        char* new_command = remove_spaces( array_parameters[1]);
+        redirect_command(new_command);       
       }
+      int new_pgid = setpgid(getpid(),getpid());
+
       signal(SIGINT, SIG_DFL);
       signal(SIGTSTP, SIG_DFL);
       signal(SIGQUIT, SIG_DFL);
@@ -172,12 +234,10 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
       {
         x=0;
         read(pipe1[0], &x, sizeof(x));
-       // printf("Valor do pipe: %d\n", x);
         if (x == -1)
         {
           int fist = getpid();
           x = fist;
-          printf("O id do primeiro ----%d\n", fist);
 
           write(pipe1[1], &fist, sizeof(fist));
           close(pipe1[0]);
@@ -186,14 +246,17 @@ int psh_launch(char **commands_array, int qtd_commands, int pipe1[2], List* pid_
         else
         {
           write(pipe1[1], &x, sizeof(x));
-          printf("Valor de x: %d\n", x);
           close(pipe1[0]);
           close(pipe1[1]);
         }
 
+        //* setando o novo pgid
+        int new_pgid = setpgid(getpid(),x);
+
         // Child process
         char delimiter=' ';
         array_parameters = split_command_to_exec(commands_array[i], array_parameters,delimiter);
+
 
         signal(SIGINT, SIG_IGN); //! ignorando sinal de interrupção, vão continuar apos o exec
         signal(SIGTSTP, SIG_IGN);
@@ -275,4 +338,23 @@ void redirect_command(char* file){
     perror("psh");
     exit(EXIT_FAILURE);
   }
+}
+
+
+//function to remove spaces before and after the command
+char* remove_spaces(char* command){
+  int i=0;
+  while(command[i]==' '){
+    i++;
+  }
+  int j=strlen(command)-1;
+  while(command[j]==' '){
+    j--;
+  }
+  char* new_command=malloc(sizeof(char)*(j-i+2));
+  for(int k=0;k<j-i+1;k++){
+    new_command[k]=command[i+k];
+  }
+  new_command[j-i+1]='\0';
+  return new_command;
 }

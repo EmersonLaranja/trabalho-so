@@ -35,14 +35,7 @@ List *initList(void)
     return nova;
 }
 
-void printList(List *list)
-{
-    Celula* aux;
 
-    for(aux = list->prim ; aux !=NULL ; aux = aux->prox){
-        printf("PID: %d\n", aux->pid);
-    }
-}
 
 
 void insertList(List *list, int pid)

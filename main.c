@@ -8,32 +8,22 @@
 #include <string.h>
 #include "list.h"
 
-#define TRUE 1
-#define VACINADOS 2
-#define NAO_VACINADOS 4
 
-
-void SIG_VAC(int signo){
-  printf("Desista - Estou Vacinado!\n");
-}
 
 int main(int argc, char const *argv[])
 {
   char **commands_array;
   int qtd_commands = 0;
   List* pid_list;
+  int pipe1[2];
+  
+  
   pid_list=initList();
   
   system("clear");
-  int pipe1[2];
 
-  // tratando sinais para psh
-  signal(SIGUSR1, SIG_VAC);
-  //signal(SIGINT, SIG_VAC);
-  //signal(SIGQUIT, SIG_VAC);
-  signal(SIGTSTP, SIG_VAC);
-  signal(SIGTERM, SIG_VAC);
 
+  block_signals();
   
   // criando pipe
   if (pipe(pipe1) == -1)
@@ -45,13 +35,9 @@ int main(int argc, char const *argv[])
   int x = -1;
   write(pipe1[1], &x, sizeof(x));
 
-
- 
   do
   {    
     print_prompt();
-
-    // scanf("%*[^\n]");
 
     commands_array = read_commands(&qtd_commands);
 
@@ -60,34 +46,35 @@ int main(int argc, char const *argv[])
       psh_launch(commands_array, qtd_commands, pipe1, pid_list);
     }
 
-    int status;
+    int status;//* status para fazer autopsia nos filhos
     waitpid(-1, &status,WNOHANG);
 
-      //! verificando se o processo filho morreu por causa do SIGUSR1
-      if(WTERMSIG(status) == SIGUSR1){
-        //printf("Processo filho morreu com code %d mata o resto\n", WTERMSIG(status));
-        destroyList(pid_list);
-        pid_list = initList();
-        print_gandalf();
-      }
+      //* verificando se o processo filho morreu por causa do SIGUSR1
+      //* começou a sepa do sigusr1, todos filhos morrem
+      handle_SIGUSR1(status,pid_list);
+     
 
-      //! verificando se o processo filho morreu por causa do SIGUSR2
-      if(WTERMSIG(status) == SIGUSR2){
-        printf("Processo filho morreu com code %d mata o resto\n", WTERMSIG(status));
-        destroyList(pid_list);
+      //* verificando se o processo filho morreu por causa do SIGUSR2
+      //* identificando que o term foi digitado
+      if(handle_SIGUSR2(status,pid_list))
         break;
-      }
+      
     
 
   } while (TRUE);
 
-  //free_commands_array(commands_array, qtd_commands);//! verificar depois
-
   return 0;
 }
 
-//! verificar depois sobre matar todos os pids de vaciandos e nao vacinados
-//! dá para otimizar matando o grupo de vacinados ao inves de cada um separado
-// ./loop;./loop; xcalc; xcalc; ping google.com
 
+/*
+xcalc;
+./loop       ; ./loop      ;
+    xcalc; xcalc; ls;ps ;
+;    ; ls;
+echo oi;
+pstree | grep a;
+code .;
 
+./loop;./loop;./loop;ls;
+*/

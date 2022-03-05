@@ -1,0 +1,17 @@
+a.out
+LICENSE
+list.c
+list.h
+loop
+loop.c
+ls
+main
+main.c
+Makefile
+prompt.c
+prompt.h
+README.md
+ saida2.txt
+ saida.txt
+saida.txt
+ teste.txt
